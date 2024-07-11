@@ -18,6 +18,8 @@ public final class Constants {
     public static final String BAD_REQUEST_STR = "ERROR\nBAD REQUEST\n";
     public static final String NOT_ENOUGH_MONEY_STR = "ERROR\nNOT ENOUGH MONEY\n";
     public static final String SEMICOLON_STR = ";";
+    public static final String DATE_PATTERN = "dd.MM.yyyy";
+    public static final String TIME_PATTERN = "HH:mm:ss";
     public static final int DISCOUNT_CARD_NUM_BEGIN_INDEX = 13;
     public static final int BALANCE_DEBIT_CARD_BEGIN_INDEX = 17;
     public static final int WHOLESALE_QUANTITY = 5;

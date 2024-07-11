@@ -7,6 +7,7 @@ import ru.clevertec.check.repositories.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +46,10 @@ public class CheckServiceImpl implements CheckService {
         StringBuilder checkProductsParams = new StringBuilder(PRODUCTS_PARAMS_STR);
         StringBuilder checkTotalParams = new StringBuilder(TOTAL_PARAMS_STR);
 
-        checkDateTime.append(dateTime.toLocalDate()).append(SEMICOLON_STR).append(dateTime.toLocalTime()).append("\n\n");
+        checkDateTime.append(dateTime.toLocalDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)))
+                .append(SEMICOLON_STR)
+                .append(dateTime.toLocalTime().format(DateTimeFormatter.ofPattern(TIME_PATTERN)))
+                .append("\n\n");
 
         for (ProductToPurchase product : productToPurchaseList) {
             Integer quantity = product.getQuantity();
