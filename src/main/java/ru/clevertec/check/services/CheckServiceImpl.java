@@ -6,6 +6,7 @@ import ru.clevertec.check.models.*;
 import ru.clevertec.check.repositories.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,12 +40,14 @@ public class CheckServiceImpl implements CheckService {
         BigDecimal totalProductsPrice = new BigDecimal(0);
         BigDecimal totalDiscount = new BigDecimal(0);
         BigDecimal totalProductsPriceWithDiscount;
-        Integer discountAmount = purchase.getDiscountAmount();
+        DiscountCard discountCard = purchase.getDiscountCard();
         LocalDateTime dateTime = LocalDateTime.now();
 
         StringBuilder checkDateTime = new StringBuilder(DATE_TIME_STR);
         StringBuilder checkProductsParams = new StringBuilder(PRODUCTS_PARAMS_STR);
         StringBuilder checkTotalParams = new StringBuilder(TOTAL_PARAMS_STR);
+        String checkDiscountCard = DISCOUNT_CARD_PARAMS_STR + discountCard.getNumber() + SEMICOLON_STR
+                + discountCard.getDiscountAmount() + "%\n";
 
         checkDateTime.append(dateTime.toLocalDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)))
                 .append(SEMICOLON_STR)
@@ -54,16 +57,16 @@ public class CheckServiceImpl implements CheckService {
         for (ProductToPurchase product : productToPurchaseList) {
             Integer quantity = product.getQuantity();
             BigDecimal price = product.getPrice();
-            BigDecimal totalPrice = price.multiply(new BigDecimal(quantity));
+            BigDecimal totalPrice = price.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.CEILING);
             String description = product.getDescription();
             BigDecimal discount;
 
             if (product.isWholesale() && quantity >= WHOLESALE_QUANTITY) {
                 discount = price.subtract(price.multiply(BigDecimal.valueOf((double) WHOLESALE_DISCOUNT / 100)));
-            } else if (discountAmount != 0) {
-                discount = price.subtract(price.multiply(BigDecimal.valueOf((double) discountAmount / 100)));
+            } else if (discountCard.getDiscountAmount() != NO_DISCOUNT) {
+                discount = price.subtract(price.multiply(BigDecimal.valueOf((double) discountCard.getDiscountAmount() / 100)));
             } else {
-                discount = BigDecimal.valueOf(0);
+                discount = BigDecimal.valueOf(NO_DISCOUNT);
             }
 
             totalProductsPrice = totalProductsPrice.add(totalPrice);
@@ -71,9 +74,9 @@ public class CheckServiceImpl implements CheckService {
 
             checkProductsParams.append(quantity).append(SEMICOLON_STR)
                     .append(description).append(SEMICOLON_STR)
-                    .append(price).append(SEMICOLON_STR)
-                    .append(discount).append(SEMICOLON_STR)
-                    .append(totalPrice).append('\n');
+                    .append(price).append(DOLLAR_SYMBOL).append(SEMICOLON_STR)
+                    .append(discount.setScale(2, RoundingMode.CEILING)).append(DOLLAR_SYMBOL).append(SEMICOLON_STR)
+                    .append(totalPrice).append(DOLLAR_SYMBOL).append('\n');
         }
 
         totalProductsPriceWithDiscount = totalProductsPrice.subtract(totalDiscount);
@@ -83,11 +86,14 @@ public class CheckServiceImpl implements CheckService {
             throw new NotEnoughMoneyException(NOT_ENOUGH_MONEY_MESSAGE);
         }
 
-        checkTotalParams.append(totalProductsPrice).append(SEMICOLON_STR)
-                .append(totalDiscount).append(SEMICOLON_STR)
-                .append(totalProductsPriceWithDiscount).append('\n');
+        checkTotalParams.append(totalProductsPrice.setScale(2, RoundingMode.CEILING))
+                .append(DOLLAR_SYMBOL).append(SEMICOLON_STR)
+                .append(totalDiscount.setScale(2, RoundingMode.CEILING))
+                .append(DOLLAR_SYMBOL).append(SEMICOLON_STR)
+                .append(totalProductsPriceWithDiscount.setScale(2, RoundingMode.CEILING))
+                .append(DOLLAR_SYMBOL).append('\n');
 
-        return checkDateTime.append(checkProductsParams).append(checkTotalParams).toString();
+        return checkDateTime.append(checkProductsParams).append(checkDiscountCard).append(checkTotalParams).toString();
     }
 
     private Purchase readPurchaseParameters(String[] parameters) {
@@ -99,17 +105,18 @@ public class CheckServiceImpl implements CheckService {
             if (matches(PRODUCT_ID_AND_QUANTITY_REGEX, parameters[i])) {
 
                 String[] productIdAndQuantity = parameters[i].split("-");
-                if (productIdAndQuantity.length != 2) {
+                if (productIdAndQuantity.length != PRODUCT_ID_AND_QUANTITY_ARR_LENGTH) {
                     checkRepository.printCheck(BAD_REQUEST_STR);
                     throw  new BadRequestException(INCORRECT_INPUT_PRODUCT_ID_AND_QUANTITY_MESSAGE);
                 }
-                if (productIdAndQuantity[1].equals("0")) {
+                if (productIdAndQuantity[PRODUCT_QUANTITY_INDEX].equals(WRONG_QUANTITY_STR)) {
                     checkRepository.printCheck(BAD_REQUEST_STR);
-                    throw  new BadRequestException("Product amount with id " + productIdAndQuantity[0] + " should be more, then 0!");
+                    throw  new BadRequestException("Product quantity with id " + productIdAndQuantity[PRODUCT_ID_INDEX]
+                            + " should be more, than 0!");
                 }
 
-                Integer productId = Integer.valueOf(productIdAndQuantity[0]);
-                Integer productQuantity = Integer.valueOf(productIdAndQuantity[1]);
+                Integer productId = Integer.valueOf(productIdAndQuantity[PRODUCT_ID_INDEX]);
+                Integer productQuantity = Integer.valueOf(productIdAndQuantity[PRODUCT_QUANTITY_INDEX]);
 
                 Product product = productList.stream()
                         .filter(someProduct -> Objects.equals(someProduct.getId(), productId))
@@ -148,10 +155,10 @@ public class CheckServiceImpl implements CheckService {
             Optional<DiscountCard> optionalDiscountCard = discountCardList.stream()
                     .filter(someDiscountCard -> Objects.equals(someDiscountCard.getNumber(), discountCardNumber))
                     .findFirst();
-            discountCard = optionalDiscountCard.orElseGet(() -> new DiscountCard(discountCardNumber, 2));
+            discountCard = optionalDiscountCard.orElseGet(() -> new DiscountCard(discountCardNumber, DEFAULT_DISCOUNT));
             i++;
         } else if (matches(NONE_DISCOUNT_CARD_REGEX, parameters[i])) {
-            discountCard = new DiscountCard(0);
+            discountCard = new DiscountCard(NO_DISCOUNT);
             i++;
         } else {
             System.out.println();
@@ -173,7 +180,7 @@ public class CheckServiceImpl implements CheckService {
             throw  new BadRequestException(INCORRECT_INPUT_MESSAGE);
         }
 
-        return new Purchase(discountCard.getDiscountAmount(), balanceDebitCard);
+        return new Purchase(discountCard, balanceDebitCard);
     }
 
     private CheckServiceImpl() {

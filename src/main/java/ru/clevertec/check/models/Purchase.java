@@ -5,16 +5,16 @@ import java.util.Objects;
 
 public class Purchase {
 
-    private final Integer discountAmount;
+    private final DiscountCard discountCard;
     private final BigDecimal balanceDebitCard;
 
-    public Purchase(Integer discountAmount, BigDecimal balanceDebitCard) {
-        this.discountAmount = discountAmount;
+    public Purchase(DiscountCard discountCard, BigDecimal balanceDebitCard) {
+        this.discountCard = discountCard;
         this.balanceDebitCard = balanceDebitCard;
     }
 
-    public Integer getDiscountAmount() {
-        return discountAmount;
+    public DiscountCard getDiscountCard() {
+        return discountCard;
     }
 
     public BigDecimal getBalanceDebitCard() {
@@ -24,7 +24,7 @@ public class Purchase {
     @Override
     public String toString() {
         return "Purchase{" +
-                "discountAmount=" + discountAmount +
+                "discountCard=" + discountCard +
                 ", balanceDebitCard=" + balanceDebitCard +
                 '}';
     }
@@ -34,12 +34,11 @@ public class Purchase {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Purchase purchase = (Purchase) o;
-        return Objects.equals(discountAmount, purchase.discountAmount)
-                && Objects.equals(balanceDebitCard, purchase.balanceDebitCard);
+        return Objects.equals(discountCard, purchase.discountCard) && Objects.equals(balanceDebitCard, purchase.balanceDebitCard);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(discountAmount, balanceDebitCard);
+        return Objects.hash(discountCard, balanceDebitCard);
     }
 }
