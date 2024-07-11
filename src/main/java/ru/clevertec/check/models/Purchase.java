@@ -17,6 +17,10 @@ public class Purchase {
         return discountAmount;
     }
 
+    public BigDecimal getBalanceDebitCard() {
+        return balanceDebitCard;
+    }
+
     @Override
     public String toString() {
         return "Purchase{" +

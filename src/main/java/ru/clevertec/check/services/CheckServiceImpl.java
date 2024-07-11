@@ -1,6 +1,7 @@
 package ru.clevertec.check.services;
 
 import ru.clevertec.check.exceptions.BadRequestException;
+import ru.clevertec.check.exceptions.NotEnoughMoneyException;
 import ru.clevertec.check.models.*;
 import ru.clevertec.check.repositories.*;
 
@@ -33,6 +34,7 @@ public class CheckServiceImpl implements CheckService {
     }
 
     private String createCheck(Purchase purchase) {
+        BigDecimal balanceDebitCard = purchase.getBalanceDebitCard();
         BigDecimal totalProductsPrice = new BigDecimal(0);
         BigDecimal totalDiscount = new BigDecimal(0);
         BigDecimal totalProductsPriceWithDiscount;
@@ -69,7 +71,14 @@ public class CheckServiceImpl implements CheckService {
                     .append(discount).append(SEMICOLON_STR)
                     .append(totalPrice).append('\n');
         }
+
         totalProductsPriceWithDiscount = totalProductsPrice.subtract(totalDiscount);
+
+        if (balanceDebitCard.compareTo(totalProductsPriceWithDiscount) < 0) {
+            checkRepository.printCheck(NOT_ENOUGH_MONEY_STR);
+            throw new NotEnoughMoneyException(NOT_ENOUGH_MONEY_MESSAGE);
+        }
+
         checkTotalParams.append(totalProductsPrice).append(SEMICOLON_STR)
                 .append(totalDiscount).append(SEMICOLON_STR)
                 .append(totalProductsPriceWithDiscount).append('\n');
