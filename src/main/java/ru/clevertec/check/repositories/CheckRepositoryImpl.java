@@ -13,6 +13,9 @@ public class CheckRepositoryImpl implements CheckRepository {
     @Override
     public void printCheck(String check) {
         File result = Path.of("./result.csv").toFile();
+        if (result.exists()) {
+            result.delete();
+        }
         try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(result, true))) {
             output.write(check.getBytes());
         } catch (IOException e) {
