@@ -14,14 +14,22 @@ public final class Constants {
     public static final String NOT_ENOUGH_MONEY_MESSAGE = "Not enough money on the debit card!";
     public static final String DATE_TIME_STR = "Date;Time\n";
     public static final String PRODUCTS_PARAMS_STR = "QTY;DESCRIPTION;PRICE;DISCOUNT;TOTAL\n";
+    public static final String DISCOUNT_CARD_PARAMS_STR = "\nDISCOUNT CARD;DISCOUNT PERCENTAGE\n";
     public static final String TOTAL_PARAMS_STR = "\nTOTAL PRICE;TOTAL DISCOUNT;TOTAL WITH DISCOUNT\n";
     public static final String BAD_REQUEST_STR = "ERROR\nBAD REQUEST\n";
     public static final String NOT_ENOUGH_MONEY_STR = "ERROR\nNOT ENOUGH MONEY\n";
     public static final String SEMICOLON_STR = ";";
+    public static final String DOLLAR_SYMBOL = "$";
+    public static final String WRONG_QUANTITY_STR = "0";
     public static final String DATE_PATTERN = "dd.MM.yyyy";
     public static final String TIME_PATTERN = "HH:mm:ss";
     public static final int DISCOUNT_CARD_NUM_BEGIN_INDEX = 13;
     public static final int BALANCE_DEBIT_CARD_BEGIN_INDEX = 17;
     public static final int WHOLESALE_QUANTITY = 5;
     public static final int WHOLESALE_DISCOUNT = 10;
+    public static final int DEFAULT_DISCOUNT = 2;
+    public static final int NO_DISCOUNT = 0;
+    public static final int PRODUCT_ID_INDEX = 0;
+    public static final int PRODUCT_QUANTITY_INDEX = 1;
+    public static final int PRODUCT_ID_AND_QUANTITY_ARR_LENGTH = 2;
 }
