@@ -25,7 +25,7 @@ public class CheckServiceImpl implements CheckService {
     private static final CheckRepository checkRepository = CheckRepositoryImpl.getInstance();
     private final List<Product> productList = productRepository.readProducts();
     private final List<DiscountCard> discountCardList = discountCardRepository.readDiscountCards();
-    private final List<ProductToPurchase> productToPurchaseList = new ArrayList<>();
+    private final List<Product> productToPurchaseList = new ArrayList<>();
 
     @Override
     public void printCheck(String[] parameters) {
@@ -54,8 +54,8 @@ public class CheckServiceImpl implements CheckService {
                 .append(dateTime.toLocalTime().format(DateTimeFormatter.ofPattern(TIME_PATTERN)))
                 .append("\n\n");
 
-        for (ProductToPurchase product : productToPurchaseList) {
-            Integer quantity = product.getQuantity();
+        for (Product product : productToPurchaseList) {
+            Integer quantity = product.getQuantityToPurchase();
             BigDecimal price = product.getPrice();
             BigDecimal totalPrice = price.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.CEILING);
             String description = product.getDescription();
@@ -111,8 +111,8 @@ public class CheckServiceImpl implements CheckService {
                 }
                 if (productIdAndQuantity[PRODUCT_QUANTITY_INDEX].equals(WRONG_QUANTITY_STR)) {
                     checkRepository.printCheck(BAD_REQUEST_STR);
-                    throw  new BadRequestException("Product quantity with id " + productIdAndQuantity[PRODUCT_ID_INDEX]
-                            + " should be more, than 0!");
+                    throw  new BadRequestException(PRODUCT_QUANTITY_WITH_ID_MESSAGE
+                            + productIdAndQuantity[PRODUCT_ID_INDEX] + ZERO_QUANTITY_MESSAGE);
                 }
 
                 Integer productId = Integer.valueOf(productIdAndQuantity[PRODUCT_ID_INDEX]);
@@ -123,24 +123,27 @@ public class CheckServiceImpl implements CheckService {
                         .findFirst()
                         .orElseThrow(() -> {
                             checkRepository.printCheck(BAD_REQUEST_STR);
-                            return new BadRequestException(INCORRECT_INPUT_PRODUCT_ID_AND_QUANTITY_MESSAGE);
+                            return new BadRequestException(PRODUCT_ID_DOES_NOT_EXIST_MESSAGE + productId);
                         });
 
-                Optional<ProductToPurchase> optionalProductToPurchase = productToPurchaseList.stream()
+                if (productQuantity > product.getAvailableQuantity()) {
+                    checkRepository.printCheck(BAD_REQUEST_STR);
+                    throw new BadRequestException(productQuantity + INCORRECT_QUANTITY_MESSAGE + productId
+                            + AVAILABLE_QUANTITY_MESSAGE + product.getAvailableQuantity());
+                }
+
+                product.setAvailableQuantity(product.getAvailableQuantity() - productQuantity);
+
+                Optional<Product> optionalProductToPurchase = productToPurchaseList.stream()
                         .filter(someProductToPurchase -> Objects.equals(someProductToPurchase.getId(), product.getId()))
                         .findFirst();
 
                 if (optionalProductToPurchase.isPresent()) {
-                    ProductToPurchase productToPurchase = optionalProductToPurchase.get();
-                    productToPurchase.setQuantity(productToPurchase.getQuantity() + productQuantity);
+                    Product productToPurchase = optionalProductToPurchase.get();
+                    productToPurchase.setQuantityToPurchase(productToPurchase.getQuantityToPurchase() + productQuantity);
                 } else {
-                    ProductToPurchase productToPurchase = new ProductToPurchase();
-                    productToPurchase.setId(product.getId());
-                    productToPurchase.setDescription(product.getDescription());
-                    productToPurchase.setPrice(product.getPrice());
-                    productToPurchase.setQuantity(productQuantity);
-                    productToPurchase.setWholesale(product.isWholesale());
-                    productToPurchaseList.add(productToPurchase);
+                    product.setQuantityToPurchase(productQuantity);
+                    productToPurchaseList.add(product);
                 }
             } else if (matches(SOME_DISCOUNT_CARD_REGEX, parameters[i])) {
                 break;

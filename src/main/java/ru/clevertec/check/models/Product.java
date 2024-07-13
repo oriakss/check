@@ -8,14 +8,15 @@ public class Product {
     private final Integer id;
     private final String description;
     private final BigDecimal price;
-    private final Integer quantity;
+    private Integer availableQuantity;
+    private Integer quantityToPurchase;
     private final boolean wholesale;
 
-    public Product(Integer id, String description, BigDecimal price, Integer quantity, boolean wholesale) {
+    public Product(Integer id, String description, BigDecimal price, Integer availableQuantity, boolean wholesale) {
         this.id = id;
         this.description = description;
         this.price = price;
-        this.quantity = quantity;
+        this.availableQuantity = availableQuantity;
         this.wholesale = wholesale;
     }
 
@@ -31,8 +32,24 @@ public class Product {
         return price;
     }
 
+    public Integer getAvailableQuantity() {
+        return availableQuantity;
+    }
+
+    public Integer getQuantityToPurchase() {
+        return quantityToPurchase;
+    }
+
     public boolean isWholesale() {
         return wholesale;
+    }
+
+    public void setAvailableQuantity(Integer availableQuantity) {
+        this.availableQuantity = availableQuantity;
+    }
+
+    public void setQuantityToPurchase(Integer quantityToPurchase) {
+        this.quantityToPurchase = quantityToPurchase;
     }
 
     @Override
@@ -41,7 +58,8 @@ public class Product {
                 "id=" + id +
                 ", description='" + description + '\'' +
                 ", price=" + price +
-                ", quantity=" + quantity +
+                ", availableQuantity=" + availableQuantity +
+                ", quantityToPurchase=" + quantityToPurchase +
                 ", wholesale=" + wholesale +
                 '}';
     }
@@ -52,12 +70,13 @@ public class Product {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
         return wholesale == product.wholesale && Objects.equals(id, product.id)
-                && Objects.equals(description, product.description)
-                && Objects.equals(price, product.price) && Objects.equals(quantity, product.quantity);
+                && Objects.equals(description, product.description) && Objects.equals(price, product.price)
+                && Objects.equals(availableQuantity, product.availableQuantity)
+                && Objects.equals(quantityToPurchase, product.quantityToPurchase);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, description, price, quantity, wholesale);
+        return Objects.hash(id, description, price, availableQuantity, quantityToPurchase, wholesale);
     }
 }

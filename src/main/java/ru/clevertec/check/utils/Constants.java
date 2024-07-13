@@ -2,12 +2,17 @@ package ru.clevertec.check.utils;
 
 public final class Constants {
 
-    public static final String PRODUCT_ID_AND_QUANTITY_REGEX = "^[0-9-0-9]{3,5}$";
+    public static final String PRODUCT_ID_AND_QUANTITY_REGEX = "^[0-9]{1,}[-]{1}[0-9]{1,2}$";
     public static final String CORRECT_DISCOUNT_CARD_REGEX = "^discountCard=[0-9]{4}$";
     public static final String SOME_DISCOUNT_CARD_REGEX = "^(discountCard=)[\\w]{0,}$";
     public static final String NONE_DISCOUNT_CARD_REGEX = "^discountCard=(NONE|none)$";
     public static final String BALANCE_DEBIT_CARD_REGEX = "^balanceDebitCard=-?[0-9]+[.]?[0-9]+$";
     public static final String INCORRECT_INPUT_PRODUCT_ID_AND_QUANTITY_MESSAGE = "Incorrect input product id and quantity!";
+    public static final String INCORRECT_QUANTITY_MESSAGE = " is greater than the available quantity product with ID ";
+    public static final String AVAILABLE_QUANTITY_MESSAGE = ". Available quantity of product - ";
+    public static final String PRODUCT_QUANTITY_WITH_ID_MESSAGE = "Product quantity with id ";
+    public static final String ZERO_QUANTITY_MESSAGE = " should be more, than 0!";
+    public static final String PRODUCT_ID_DOES_NOT_EXIST_MESSAGE = "There is no product with ID ";
     public static final String INCORRECT_INPUT_DISCOUNT_CARD_MESSAGE = "Incorrect input discount card!";
     public static final String INCORRECT_INPUT_BALANCE_DEBIT_CARD_MESSAGE = "Incorrect input balance debit card!";
     public static final String INCORRECT_INPUT_MESSAGE = "Incorrect input!";
